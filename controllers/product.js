@@ -26,7 +26,10 @@ exports.create = (req, res) => {
 
         // 1kb = 1000
         // 1mb = 1000000
-
+        console.log(files);
+        console.log(files.photo);
+        console.log(files.photo.filepath);
+        console.log(files.photo.mimetype);
         if (files.photo) {
             // console.log("Files Photo",files.photo);
             if (files.photo.size > 1000000) {
@@ -34,8 +37,8 @@ exports.create = (req, res) => {
                     error: 'Image should be less than 1 mb in size'
                 });
             }
-            product.photo.data = fs.readFileSync(files.photo.path);
-            product.photo.contentType = files.photo.type;
+            product.photo.data = fs.readFileSync(files.photo.filepath);
+            product.photo.contentType = files.photo.mimetype;
         }
 
         product.save((err, result) => {

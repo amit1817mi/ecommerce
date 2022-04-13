@@ -75,6 +75,6 @@ exports.isAdmin = (req,res,next) => {
             error: 'Admin resource! Access denied'
         })
     }
-    
+
     next();
 }

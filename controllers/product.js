@@ -5,12 +5,15 @@ const fs = require('fs');
 const { errorHandler } = require('../helpers/dbErrorHandler');
 
 exports.productById = (req, res, next, id) => {
-    Product.findById(id).exec((err, product) => {
+    Product.findById(id)
+    .populate("category")
+    .exec((err, product) => {
         if (err || !product) {
             return res.status(400).json({
                 error: "Product not found"
             });
         }
+        // console.log(product);
         req.product = product;
         next();
     });
@@ -99,12 +102,12 @@ exports.update = (req, res) => {
         console.log(fields);
 
         // check for all fields 
-        const { name, description, price, category, quantity, shipping } = fields;
-        if (!name || !description || !price || !category || !quantity || !shipping) {
-            return res.status(400).json({
-                error: 'All fields are required'
-            });
-        }
+        // const { name, description, price, category, quantity, shipping } = fields;
+        // if (!name || !description || !price || !category || !quantity || !shipping) {
+        //     return res.status(400).json({
+        //         error: 'All fields are required'
+        //     });
+        // }
 
         let product = req.product;
         product = _.extend(product, fields);  // .extend provided by lodash
@@ -279,4 +282,24 @@ exports.listSearch = (req,res) => {
             return res.json(products);
         }).select('-photo');
     }
+}
+
+exports.decreaseQuantity = (req,res,next) => {
+    let bulkOps = req.body.order.products.map((item) => {
+        return {
+            updateOne: {
+                filter: {_id: item._id},
+                update: {$inc: {quantity: -item.count, sold: +item.count}}
+            }
+        }
+    })
+
+    Product.bulkWrite(bulkOps, {}, (error, products) => {
+        if(error) {
+            return res,status(400).json({
+                error: 'Could not update product'
+            });
+        }
+        next();
+    })
 }
